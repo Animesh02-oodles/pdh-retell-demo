@@ -110,6 +110,36 @@ Dr. Smith’s Office"""
 
     return {"sms": sms, "email_subject": email_subject, "email_body": email_body}
 
+
+# ====================== KEEP-ALIVE FOR RENDER FREE TIER ======================
+import threading
+import time
+import requests
+import os
+
+# Keep-alive URL (your own deployed URL)
+KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
+
+def keep_alive():
+    while True:
+        try:
+            response = requests.get(KEEP_ALIVE_URL, timeout=10)
+            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
+        except Exception as e:
+            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
+        time.sleep(240)  # Ping every 4 minutes (Render sleeps after ~15 min)
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Render keep-alive is working"}
+
+# Start keep-alive in background thread
+if __name__ != "__main__":
+    # This runs when deployed on Render / Vercel / etc.
+    threading.Thread(target=keep_alive, daemon=True).start()
+    print("✅ Keep-alive thread started (pings every 4 minutes)")
+
 # ====================== WEBHOOK ======================
 @app.post("/webhook")
 async def webhook(request: Request):
