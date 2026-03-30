@@ -11,8 +11,8 @@ MOCK_DATA = {
 },
 "status": "Referral on file",
 "prep_link": "https://ampleai.co/prep/colonoscopy",
-"phone": "+15551234567",
-"email": "test@gmail.com"
+"phone": "+61435441731",
+"email": "wolfburghwellness@gmail.com"
 },
         {
             "name": "Harry Potter",
@@ -39,8 +39,8 @@ MOCK_DATA = {
             },
             "status": "Booked - needs reschedule",
             "prep_link": "https://ampleai.co/prep/colonoscopy",
-            "phone": "+15551234567",
-            "email": "test@example.com"
+            "phone": "+61435441731",
+            "email": "wolfburghwellness@gmail.com"
         },
         {
             "name": "Dorothy Fawcett",
@@ -53,8 +53,8 @@ MOCK_DATA = {
             },
             "status": "Booked",
             "prep_link": "https://ampleai.co/prep/gastroscopy",
-            "phone": "+15551234567",
-            "email": "test@example.com"
+            "phone": "+61435441731",
+            "email": "wolfburghwellness@gmail.com"
         }
     ],
     "schedule": [
@@ -87,17 +87,20 @@ MOCK_DATA = {
         {
             "name": "Royal Jubilee Hospital",
             "address": "1952 Bay St, Victoria, BC V8R 1J8",
-            "arrival_note": "Please arrive 30 minutes early."
+            "arrival_note": "Please arrive 30 minutes early.",
+            "google_maps": "https://www.google.com/maps/dir/?api=1&destination=1952+Bay+St,+Victoria,+BC+V8R+1J8"
         },
         {
             "name": "Victoria General Hospital",
             "address": "1 Hospital Way, Victoria, BC V8Z 6R5",
-            "arrival_note": "Please arrive 30 minutes early."
+            "arrival_note": "Please arrive 30 minutes early.",
+            "google_maps": "https://www.google.com/maps/dir/?api=1&destination=1+Hospital+Way,+Victoria,+BC+V8Z+6R5"
         },
         {
             "name": "Saanich Peninsula Hospital",
             "address": "2166 Mt. Newton Cross Rd, Saanichton, BC V8M 2B2",
-            "arrival_note": "Please arrive 30 minutes early."
+            "arrival_note": "Please arrive 30 minutes early.",
+            "google_maps": "https://www.google.com/maps/dir/?api=1&destination=2166+Mt.+Newton+Cross+Rd,+Saanichton,+BC+V8M+2B2"
         }
     ]
 }

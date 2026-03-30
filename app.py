@@ -35,80 +35,119 @@ def get_location_details(location_name: str):
     for loc in DATA["locations"]:
         if loc["name"] == location_name:
             return loc
-    return {"address": "Victoria, BC", "arrival_note": "Please arrive 30 minutes early."}
+    return {"address": "Victoria, BC", "google_maps": ""}
 
 # ====================== EXACT TEMPLATES FROM CLIENT BRIEF ======================
 def get_followup_templates(patient: dict, msg_type: str):
-    location = get_location_details(patient["appointment"]["location"])
+    location_name = patient["appointment"]["location"]
+    location = get_location_details(location_name)
+    
     date = patient["appointment"]["date"]
     time = patient["appointment"]["time"]
-    loc_name = patient["appointment"]["location"]
-    address = location["address"]
+    loc_name = location_name
+    address = location.get("address", "")
+    google_maps = location.get("google_maps", "")
     prep_link = patient["prep_link"]
 
+    driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
+
     if msg_type == "booking":
-        sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}. "
-               f"Address: {address}. Please arrive 30 minutes early. If IV sedation is planned, "
-               f"you are legally impaired for 24 hours afterward and must have a responsible adult "
-               f"drive you home. Prep instructions: {prep_link}")
-        email_subject = "Pacific Digestive Health Appointment Details"
+        sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"{driver_reminder}\n"
+               f"Prep instructions: {prep_link}")
+
+        email_subject = "Pacific Digestive Health Appointment Confirmation"
         email_body = f"""Hello,
 
-This is your appointment information from Pacific Digestive Health.
-Hospital: {loc_name}
-Address: {address}
-Date: {date}
-Time: {time}
-Please arrive 30 minutes early.
-If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home.
+Your procedure has been booked with Pacific Digestive Health.
 
-Preparation instructions:
+**Hospital:** {loc_name}
+**Address:** {address}
+**Date:** {date}
+**Time:** {time}
+
+**Google Maps:** {google_maps}
+
+Please arrive 30 minutes early.
+
+{driver_reminder}
+
+**Preparation Instructions:**
 {prep_link}
 
 Thank you,
 Pacific Digestive Health
 Dr. Smith’s Office"""
+
     elif msg_type == "reschedule":
-        sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}. "
-               f"Address: {address}. Please arrive 30 minutes early. If IV sedation is planned, "
-               f"you are legally impaired for 24 hours afterward and must have a responsible adult "
-               f"drive you home. Prep instructions: {prep_link}")
-        email_subject = "Pacific Digestive Health Appointment Details - Updated"
+        sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"{driver_reminder}\n"
+               f"Prep instructions: {prep_link}")
+
+        email_subject = "Pacific Digestive Health Appointment Updated"
         email_body = f"""Hello,
 
-Your appointment has been updated:
-Hospital: {loc_name}
-Address: {address}
-Date: {date}
-Time: {time}
-Please arrive 30 minutes early.
-If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home.
+Your appointment has been **updated**:
 
-Preparation instructions:
+**Hospital:** {loc_name}
+**Address:** {address}
+**Date:** {date}
+**Time:** {time}
+
+**Google Maps:** {google_maps}
+
+Please arrive 30 minutes early.
+
+{driver_reminder}
+
+**Preparation Instructions:**
 {prep_link}
 
 Thank you,
 Pacific Digestive Health
 Dr. Smith’s Office"""
+
     else:  # logistics
-        sms = (f"Pacific Digestive Health: Your appointment is {date} at {time} at {loc_name}, "
-               f"{address}. Please arrive 30 minutes early. Prep: {prep_link}")
+        sms = (f"Pacific Digestive Health: Your appointment is on {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"Prep: {prep_link}")
+
         email_subject = "Pacific Digestive Health Appointment Details"
         email_body = f"""Hello,
 
-Your appointment details:
-Hospital: {loc_name}
-Address: {address}
-Date: {date}
-Time: {time}
+Here are your appointment details:
+
+**Hospital:** {loc_name}
+**Address:** {address}
+**Date:** {date}
+**Time:** {time}
+
+**Google Maps:** {google_maps}
+
 Please arrive 30 minutes early.
-Preparation instructions: {prep_link}
+
+{driver_reminder if "sedation" in prep_link.lower() else ""}
+
+**Preparation Instructions:**
+{prep_link}
 
 Thank you,
 Pacific Digestive Health
 Dr. Smith’s Office"""
 
-    return {"sms": sms, "email_subject": email_subject, "email_body": email_body}
+    return {
+        "sms": sms,
+        "email_subject": email_subject,
+        "email_body": email_body
+    }
 
 
 # ====================== KEEP-ALIVE FOR RENDER FREE TIER ======================
