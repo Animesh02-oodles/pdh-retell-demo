@@ -741,7 +741,6 @@
 
 
 # code update v3
-
 # app.py
 import os
 import json
@@ -772,14 +771,14 @@ from mock_data import MOCK_DATA
 
 # Global state
 DATA = copy.deepcopy(MOCK_DATA)
-CURRENT_CALL_ID = None   # To detect new calls
+CURRENT_CALL_ID = None
 
 def reset_mock_data():
-    """Reset all mock data for a new call"""
+    """Reset all mock data for a new call - This was the critical part client wanted"""
     global DATA, CURRENT_CALL_ID
     DATA = copy.deepcopy(MOCK_DATA)
     CURRENT_CALL_ID = None
-    print("🔄 [RESET] Mock data has been reset for a new call")
+    print("🔄 [RESET] Mock data has been fully reset to original state")
 
 # ====================== HELPER FUNCTIONS ======================
 def find_patient(full_name: str, dob: str):
@@ -795,7 +794,7 @@ def get_location_details(location_name: str):
             return loc
     return {"address": "Victoria, BC", "google_maps": ""}
 
-# ====================== FIXED FOLLOW-UP TEMPLATES ======================
+# ====================== FIXED FOLLOW-UP TEMPLATES (With requested fields) ======================
 def get_followup_templates(patient: dict, msg_type: str):
     location_name = patient["appointment"]["location"]
     location = get_location_details(location_name)
@@ -811,7 +810,7 @@ def get_followup_templates(patient: dict, msg_type: str):
 
     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
 
-    # ==================== SMS ====================
+    # SMS Template
     if msg_type == "booking":
         sms = (f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\n"
                f"Address: {address}\n"
@@ -835,9 +834,8 @@ def get_followup_templates(patient: dict, msg_type: str):
                f"Please arrive 30 minutes early.\n"
                f"Prep instructions: {prep_link}")
 
-    # ==================== EMAIL ====================
+    # Email Template
     email_subject = "Pacific Digestive Health Appointment Details"
-
     email_body = f"""Hello,
 
 Your {procedure} appointment with Pacific Digestive Health:
@@ -870,16 +868,16 @@ Dr. Brendan’s Office
     }
 
 
-# ====================== KEEP-ALIVE FOR RENDER FREE TIER ======================
+# ====================== KEEP-ALIVE ======================
 KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
 
 def keep_alive():
     while True:
         try:
             response = requests.get(KEEP_ALIVE_URL, timeout=10)
-            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
+            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent")
         except Exception as e:
-            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
+            print(f"Keep-alive failed: {e}")
         time.sleep(240)
 
 @app.get("/health")
@@ -888,7 +886,7 @@ async def health_check():
 
 if __name__ != "__main__":
     threading.Thread(target=keep_alive, daemon=True).start()
-    print("✅ Keep-alive thread started (pings every 4 minutes)")
+    print("✅ Keep-alive thread started")
 
 
 # ====================== WEBHOOK ======================
@@ -904,7 +902,7 @@ async def webhook(request: Request):
         print("❌ Invalid JSON received")
         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
 
-    # ====================== AUTO RESET ON NEW CALL ======================
+    # ====================== STRONG RESET ON EVERY NEW CALL ======================
     call_id = None
     if isinstance(body, dict) and "call" in body:
         call_data = body.get("call")
@@ -912,20 +910,14 @@ async def webhook(request: Request):
             call_id = call_data.get("call_id")
 
     if call_id and call_id != CURRENT_CALL_ID:
-        print(f"🔄 New call detected (Call ID: {call_id}). Resetting mock data...")
+        print(f"🔄 New call detected (Call ID: {call_id}). Resetting mock data to original state...")
         reset_mock_data()
         CURRENT_CALL_ID = call_id
-
-    # Debug logging
-    print(f"\n🔧 --- NEW TOOL CALL ---")
-    print(f"Call ID: {call_id}")
-    print(f"Tool Name: {body.get('name')}")
 
     function_name = body.get("name")
     args = body.get("args", {}) or {}
 
     if not function_name:
-        print("❌ No function name found in payload")
         return JSONResponse(status_code=200, content={"result": {"error": "No function name"}})
 
     result = {}
@@ -983,10 +975,8 @@ async def webhook(request: Request):
 
     elif function_name == "send_followup":
         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
-        
         if not patient:
             result = {"success": False, "error": "Patient not found"}
-            print("❌ Patient not found for follow-up")
         else:
             msg_type = args.get("message_type", "logistics")
             templates = get_followup_templates(patient, msg_type)
@@ -1001,7 +991,7 @@ async def webhook(request: Request):
             sms_sent = False
             email_sent = False
 
-            # ====================== TWILIO SMS ======================
+            # Twilio SMS
             twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
             twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
             twilio_from = os.getenv("TWILIO_PHONE_FROM")
@@ -1015,12 +1005,12 @@ async def webhook(request: Request):
                         from_=twilio_from,
                         to=phone
                     )
-                    print(f"✅ SMS Sent! SID: {message.sid} | Status: {message.status}")
+                    print(f"✅ SMS Sent! SID: {message.sid}")
                     sms_sent = True
                 except Exception as e:
-                    print(f"❌ Twilio Error: {type(e).__name__}: {e}")
+                    print(f"❌ Twilio Error: {e}")
 
-            # ====================== SENDGRID EMAIL ======================
+            # SendGrid Email
             sendgrid_key = os.getenv("SENDGRID_API_KEY")
             from_email = os.getenv("SENDGRID_FROM_EMAIL")
 
@@ -1028,32 +1018,24 @@ async def webhook(request: Request):
                 try:
                     from sendgrid import SendGridAPIClient
                     from sendgrid.helpers.mail import Mail
-
                     sg = SendGridAPIClient(sendgrid_key)
-
                     message = Mail(
                         from_email=from_email,
                         to_emails=email,
                         subject=templates['email_subject'],
                         html_content=templates['email_body'].replace("\n", "<br>")
                     )
-
                     response = sg.send(message)
-                    print(f"✅ Email Sent! Status Code: {response.status_code}")
+                    print(f"✅ Email Sent! Status: {response.status_code}")
                     email_sent = True
-
                 except Exception as e:
-                    print(f"❌ SendGrid Error: {type(e).__name__}: {e}")
-            else:
-                print("⚠️ SendGrid credentials missing")
+                    print(f"❌ SendGrid Error: {e}")
 
             print('='*90)
 
             result = {
                 "success": True,
                 "message_type": msg_type,
-                "phone": phone,
-                "email": email,
                 "sms_sent": sms_sent,
                 "email_sent": email_sent
             }
@@ -1065,7 +1047,6 @@ async def webhook(request: Request):
     return JSONResponse(status_code=200, content={"result": result})
 
 
-# ====================== MANUAL RESET FOR QA ======================
 @app.post("/reset")
 async def reset_state():
     reset_mock_data()
