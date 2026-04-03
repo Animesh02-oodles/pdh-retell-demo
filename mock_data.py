@@ -11,8 +11,10 @@ MOCK_DATA = {
 },
 "status": "Referral on file",
 "prep_link": "https://ampleai.co/prep/colonoscopy",
-"phone": "+61435441731",
-"email": "wolfburghwellness@gmail.com"
+# "phone": "+61435441731",
+# "email": "wolfburghwellness@gmail.com"
+"phone": "+919451958058",  
+"email": "animesh.pandey@oodles.io"
 },
         {
             "name": "Harry Potter",
@@ -25,8 +27,10 @@ MOCK_DATA = {
             },
             "status": "Referral on file",
             "prep_link": "https://ampleai.co/prep/colonoscopy",
-            "phone": "+919451958058",  
-            "email": "animesh.pandey@oodles.io"
+            # "phone": "+919451958058",  
+            # "email": "animesh.pandey@oodles.io"
+            "phone": "+61435441731",
+            "email": "wolfburghwellness@gmail.com"
         },
         {
             "name": "Robert Takahashi",
@@ -41,6 +45,8 @@ MOCK_DATA = {
             "prep_link": "https://ampleai.co/prep/colonoscopy",
             "phone": "+61435441731",
             "email": "wolfburghwellness@gmail.com"
+            # "phone": "+919451958058",  
+            # "email": "animesh.pandey@oodles.io"
         },
         {
             "name": "Dorothy Fawcett",
@@ -55,6 +61,8 @@ MOCK_DATA = {
             "prep_link": "https://ampleai.co/prep/gastroscopy",
             "phone": "+61435441731",
             "email": "wolfburghwellness@gmail.com"
+            # "phone": "+919451958058",  
+            # "email": "animesh.pandey@oodles.io"
         }
     ],
     "schedule": [

@@ -738,9 +738,6 @@
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
-
-
-# code update v3
 # app.py
 import os
 import json
@@ -762,7 +759,7 @@ try:
     retell_client = Retell(api_key=os.getenv("RETELL_API_KEY"))
     RETELL_AVAILABLE = True
 except ImportError:
-    print("⚠️  retell_sdk not installed → signature verification skipped for local testing.")
+    print("⚠️  retell_sdk not installed → signature verification skipped.")
     RETELL_AVAILABLE = False
     retell_client = None
 
@@ -774,11 +771,10 @@ DATA = copy.deepcopy(MOCK_DATA)
 CURRENT_CALL_ID = None
 
 def reset_mock_data():
-    """Reset all mock data for a new call - This was the critical part client wanted"""
     global DATA, CURRENT_CALL_ID
     DATA = copy.deepcopy(MOCK_DATA)
     CURRENT_CALL_ID = None
-    print("🔄 [RESET] Mock data has been fully reset to original state")
+    print("🔄 [RESET] Mock data fully reset to original state for new test")
 
 # ====================== HELPER FUNCTIONS ======================
 def find_patient(full_name: str, dob: str):
@@ -794,7 +790,7 @@ def get_location_details(location_name: str):
             return loc
     return {"address": "Victoria, BC", "google_maps": ""}
 
-# ====================== FIXED FOLLOW-UP TEMPLATES (With requested fields) ======================
+# ====================== FIXED TEMPLATES (with procedure + prep start) ======================
 def get_followup_templates(patient: dict, msg_type: str):
     location_name = patient["appointment"]["location"]
     location = get_location_details(location_name)
@@ -810,31 +806,15 @@ def get_followup_templates(patient: dict, msg_type: str):
 
     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
 
-    # SMS Template
+    # SMS
     if msg_type == "booking":
-        sms = (f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\n"
-               f"Address: {address}\n"
-               f"Prep starts: {prep_start_date}\n"
-               f"Please arrive 30 minutes early.\n"
-               f"{driver_reminder}\n"
-               f"Prep instructions: {prep_link}")
-
+        sms = f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
     elif msg_type == "reschedule":
-        sms = (f"Pacific Digestive Health: Your {procedure} has been rescheduled to {date} at {time} at {loc_name}.\n"
-               f"Address: {address}\n"
-               f"Prep starts: {prep_start_date}\n"
-               f"Please arrive 30 minutes early.\n"
-               f"{driver_reminder}\n"
-               f"Prep instructions: {prep_link}")
-
+        sms = f"Pacific Digestive Health: Your {procedure} has been rescheduled to {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
     else:  # logistics
-        sms = (f"Pacific Digestive Health: Your {procedure} is on {date} at {time} at {loc_name}.\n"
-               f"Address: {address}\n"
-               f"Prep starts: {prep_start_date}\n"
-               f"Please arrive 30 minutes early.\n"
-               f"Prep instructions: {prep_link}")
+        sms = f"Pacific Digestive Health: Your {procedure} is on {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\nPrep instructions: {prep_link}"
 
-    # Email Template
+    # Email
     email_subject = "Pacific Digestive Health Appointment Details"
     email_body = f"""Hello,
 
@@ -875,18 +855,16 @@ def keep_alive():
     while True:
         try:
             response = requests.get(KEEP_ALIVE_URL, timeout=10)
-            print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent")
         except Exception as e:
             print(f"Keep-alive failed: {e}")
         time.sleep(240)
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "message": "Render keep-alive is working"}
+    return {"status": "healthy"}
 
 if __name__ != "__main__":
     threading.Thread(target=keep_alive, daemon=True).start()
-    print("✅ Keep-alive thread started")
 
 
 # ====================== WEBHOOK ======================
@@ -899,10 +877,9 @@ async def webhook(request: Request):
     try:
         body = json.loads(body_str)
     except json.JSONDecodeError:
-        print("❌ Invalid JSON received")
         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
 
-    # ====================== STRONG RESET ON EVERY NEW CALL ======================
+    # === STRONG RESET ON EVERY NEW CALL ===
     call_id = None
     if isinstance(body, dict) and "call" in body:
         call_data = body.get("call")
@@ -910,7 +887,7 @@ async def webhook(request: Request):
             call_id = call_data.get("call_id")
 
     if call_id and call_id != CURRENT_CALL_ID:
-        print(f"🔄 New call detected (Call ID: {call_id}). Resetting mock data to original state...")
+        print(f"🔄 New call detected (ID: {call_id}). Resetting mock data to original state...")
         reset_mock_data()
         CURRENT_CALL_ID = call_id
 
@@ -934,7 +911,7 @@ async def webhook(request: Request):
                 "procedure": patient["procedure"],
                 "appointment": patient["appointment"],
                 "status": patient["status"],
-                "prep_link": patient["prep_link"]
+                "prep_link": patient.get("prep_link")
             }
         else:
             result = {"error": "Patient not found"}
@@ -947,31 +924,33 @@ async def webhook(request: Request):
         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
         if not patient:
             result = {"success": False, "error": "Patient not found"}
-        else:
-            new_date = args.get("new_date")
-            new_time = args.get("new_time")
-            action = args.get("action", "book").lower()
+            return JSONResponse(status_code=200, content={"result": result})
 
-            success = False
-            for slot in DATA["schedule"]:
-                if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
-                    slot["status"] = "BOOKED"
-                    slot["patient"] = patient["name"]
-                    patient["appointment"] = {
-                        "date": new_date,
-                        "time": new_time,
-                        "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
-                    }
-                    success = True
+        new_date = args.get("new_date")
+        new_time = args.get("new_time")
+        action = args.get("action", "book").lower()
 
-                    if action == "reschedule":
-                        for old_slot in DATA["schedule"]:
-                            if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
-                                old_slot["status"] = "OPEN"
-                                old_slot["patient"] = None
-                                break
-                    break
-            result = {"success": success, "action": action}
+        success = False
+        for slot in DATA["schedule"]:
+            if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
+                slot["status"] = "BOOKED"
+                slot["patient"] = patient["name"]
+                patient["appointment"] = {
+                    "date": new_date,
+                    "time": new_time,
+                    "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
+                }
+                success = True
+
+                if action == "reschedule":
+                    for old_slot in DATA["schedule"]:
+                        if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
+                            old_slot["status"] = "OPEN"
+                            old_slot["patient"] = None
+                            break
+                break
+
+        result = {"success": success, "action": action}
 
     elif function_name == "send_followup":
         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
@@ -984,10 +963,6 @@ async def webhook(request: Request):
             phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
             email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
 
-            print(f"\n{'='*90}")
-            print(f"📱 SMS to {phone} | Type: {msg_type}")
-            print(f"📧 EMAIL to {email} | Type: {msg_type}")
-
             sms_sent = False
             email_sent = False
 
@@ -995,43 +970,29 @@ async def webhook(request: Request):
             twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
             twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
             twilio_from = os.getenv("TWILIO_PHONE_FROM")
-
             if twilio_sid and twilio_token and twilio_from:
                 try:
                     from twilio.rest import Client
                     client = Client(twilio_sid, twilio_token)
-                    message = client.messages.create(
-                        body=templates['sms'],
-                        from_=twilio_from,
-                        to=phone
-                    )
-                    print(f"✅ SMS Sent! SID: {message.sid}")
+                    message = client.messages.create(body=templates['sms'], from_=twilio_from, to=phone)
                     sms_sent = True
                 except Exception as e:
-                    print(f"❌ Twilio Error: {e}")
+                    print(f"Twilio Error: {e}")
 
             # SendGrid Email
             sendgrid_key = os.getenv("SENDGRID_API_KEY")
             from_email = os.getenv("SENDGRID_FROM_EMAIL")
-
             if sendgrid_key and from_email:
                 try:
                     from sendgrid import SendGridAPIClient
                     from sendgrid.helpers.mail import Mail
                     sg = SendGridAPIClient(sendgrid_key)
-                    message = Mail(
-                        from_email=from_email,
-                        to_emails=email,
-                        subject=templates['email_subject'],
-                        html_content=templates['email_body'].replace("\n", "<br>")
-                    )
-                    response = sg.send(message)
-                    print(f"✅ Email Sent! Status: {response.status_code}")
+                    msg = Mail(from_email=from_email, to_emails=email, subject=templates['email_subject'],
+                               html_content=templates['email_body'].replace("\n", "<br>"))
+                    sg.send(msg)
                     email_sent = True
                 except Exception as e:
-                    print(f"❌ SendGrid Error: {e}")
-
-            print('='*90)
+                    print(f"SendGrid Error: {e}")
 
             result = {
                 "success": True,
@@ -1043,7 +1004,6 @@ async def webhook(request: Request):
     else:
         result = {"error": "Unknown function"}
 
-    print(f"✅ Returning: {result}")
     return JSONResponse(status_code=200, content={"result": result})
 
 
