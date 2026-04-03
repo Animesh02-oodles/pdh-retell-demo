@@ -1,370 +1,741 @@
-# # app.py
-# import os
-# import json
-# import copy
-# from fastapi import FastAPI, Request, HTTPException
-# from fastapi.responses import JSONResponse
-# from dotenv import load_dotenv
+# # # app.py
+# # import os
+# # import json
+# # import copy
+# # from fastapi import FastAPI, Request, HTTPException
+# # from fastapi.responses import JSONResponse
+# # from dotenv import load_dotenv
 
-# load_dotenv()
+# # load_dotenv()
 
-# app = FastAPI()
+# # app = FastAPI()
 
-# # Retell SDK
-# try:
-#     from retell_sdk import Retell
-#     retell_client = Retell(api_key=os.getenv("RETELL_API_KEY"))
-#     RETELL_AVAILABLE = True
-# except ImportError:
-#     print("⚠️  retell_sdk not installed → signature verification skipped for local testing.")
-#     RETELL_AVAILABLE = False
-#     retell_client = None
+# # # Retell SDK
+# # try:
+# #     from retell_sdk import Retell
+# #     retell_client = Retell(api_key=os.getenv("RETELL_API_KEY"))
+# #     RETELL_AVAILABLE = True
+# # except ImportError:
+# #     print("⚠️  retell_sdk not installed → signature verification skipped for local testing.")
+# #     RETELL_AVAILABLE = False
+# #     retell_client = None
 
-# # Load mock data
-# from mock_data import MOCK_DATA
-# DATA = copy.deepcopy(MOCK_DATA)
+# # # Load mock data
+# # from mock_data import MOCK_DATA
+# # DATA = copy.deepcopy(MOCK_DATA)
 
-# def find_patient(full_name: str, dob: str):
-#     full_name = full_name.strip().lower()
-#     for p in DATA["patients"]:
-#         if p["name"].lower() == full_name and p["dob"] == dob:
-#             return p
-#     return None
+# # def find_patient(full_name: str, dob: str):
+# #     full_name = full_name.strip().lower()
+# #     for p in DATA["patients"]:
+# #         if p["name"].lower() == full_name and p["dob"] == dob:
+# #             return p
+# #     return None
 
-# def get_location_details(location_name: str):
-#     for loc in DATA["locations"]:
-#         if loc["name"] == location_name:
-#             return loc
-#     return {"address": "Victoria, BC", "google_maps": ""}
+# # def get_location_details(location_name: str):
+# #     for loc in DATA["locations"]:
+# #         if loc["name"] == location_name:
+# #             return loc
+# #     return {"address": "Victoria, BC", "google_maps": ""}
 
-# # ====================== EXACT TEMPLATES FROM CLIENT BRIEF ======================
-# def get_followup_templates(patient: dict, msg_type: str):
-#     location_name = patient["appointment"]["location"]
-#     location = get_location_details(location_name)
+# # # ====================== EXACT TEMPLATES FROM CLIENT BRIEF ======================
+# # def get_followup_templates(patient: dict, msg_type: str):
+# #     location_name = patient["appointment"]["location"]
+# #     location = get_location_details(location_name)
     
-#     date = patient["appointment"]["date"]
-#     time = patient["appointment"]["time"]
-#     loc_name = location_name
-#     address = location.get("address", "")
-#     google_maps = location.get("google_maps", "")
-#     prep_link = patient["prep_link"]
+# #     date = patient["appointment"]["date"]
+# #     time = patient["appointment"]["time"]
+# #     loc_name = location_name
+# #     address = location.get("address", "")
+# #     google_maps = location.get("google_maps", "")
+# #     prep_link = patient["prep_link"]
 
-#     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
+# #     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
 
-#     if msg_type == "booking":
-#         sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"{driver_reminder}\n"
-#                f"Prep instructions: {prep_link}")
+# #     if msg_type == "booking":
+# #         sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"{driver_reminder}\n"
+# #                f"Prep instructions: {prep_link}")
 
-#         email_subject = "Pacific Digestive Health Appointment Confirmation"
-#         email_body = f"""Hello,
+# #         email_subject = "Pacific Digestive Health Appointment Confirmation"
+# #         email_body = f"""Hello,
 
-# Your procedure has been booked with Pacific Digestive Health.
+# # Your procedure has been booked with Pacific Digestive Health.
 
-# **Hospital:** {loc_name}
-# **Address:** {address}
-# **Date:** {date}
-# **Time:** {time}
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
 
-# **Google Maps:** {google_maps}
+# # **Google Maps:** {google_maps}
 
-# Please arrive 30 minutes early.
+# # Please arrive 30 minutes early.
 
-# {driver_reminder}
+# # {driver_reminder}
 
-# **Preparation Instructions:**
-# {prep_link}
+# # **Preparation Instructions:**
+# # {prep_link}
 
-# Thank you,
-# Pacific Digestive Health
-# Dr. Smith’s Office"""
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
 
-#     elif msg_type == "reschedule":
-#         sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"{driver_reminder}\n"
-#                f"Prep instructions: {prep_link}")
+# #     elif msg_type == "reschedule":
+# #         sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"{driver_reminder}\n"
+# #                f"Prep instructions: {prep_link}")
 
-#         email_subject = "Pacific Digestive Health Appointment Updated"
-#         email_body = f"""Hello,
+# #         email_subject = "Pacific Digestive Health Appointment Updated"
+# #         email_body = f"""Hello,
 
-# Your appointment has been **updated**:
+# # Your appointment has been **updated**:
 
-# **Hospital:** {loc_name}
-# **Address:** {address}
-# **Date:** {date}
-# **Time:** {time}
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
 
-# **Google Maps:** {google_maps}
+# # **Google Maps:** {google_maps}
 
-# Please arrive 30 minutes early.
+# # Please arrive 30 minutes early.
 
-# {driver_reminder}
+# # {driver_reminder}
 
-# **Preparation Instructions:**
-# {prep_link}
+# # **Preparation Instructions:**
+# # {prep_link}
 
-# Thank you,
-# Pacific Digestive Health
-# Dr. Smith’s Office"""
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
 
-#     else:  # logistics
-#         sms = (f"Pacific Digestive Health: Your appointment is on {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"Prep: {prep_link}")
+# #     else:  # logistics
+# #         sms = (f"Pacific Digestive Health: Your appointment is on {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"Prep: {prep_link}")
 
-#         email_subject = "Pacific Digestive Health Appointment Details"
-#         email_body = f"""Hello,
+# #         email_subject = "Pacific Digestive Health Appointment Details"
+# #         email_body = f"""Hello,
 
-# Here are your appointment details:
+# # Here are your appointment details:
 
-# **Hospital:** {loc_name}
-# **Address:** {address}
-# **Date:** {date}
-# **Time:** {time}
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
 
-# **Google Maps:** {google_maps}
+# # **Google Maps:** {google_maps}
 
-# Please arrive 30 minutes early.
+# # Please arrive 30 minutes early.
 
-# {driver_reminder if "sedation" in prep_link.lower() else ""}
+# # {driver_reminder if "sedation" in prep_link.lower() else ""}
 
-# **Preparation Instructions:**
-# {prep_link}
+# # **Preparation Instructions:**
+# # {prep_link}
 
-# Thank you,
-# Pacific Digestive Health
-# Dr. Smith’s Office"""
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
 
-#     return {
-#         "sms": sms,
-#         "email_subject": email_subject,
-#         "email_body": email_body
-#     }
+# #     return {
+# #         "sms": sms,
+# #         "email_subject": email_subject,
+# #         "email_body": email_body
+# #     }
 
 
-# # ====================== KEEP-ALIVE FOR RENDER FREE TIER ======================
-# import threading
-# import time
-# import requests
-# import os
+# # # ====================== KEEP-ALIVE FOR RENDER FREE TIER ======================
+# # import threading
+# # import time
+# # import requests
+# # import os
 
-# # Keep-alive URL (your own deployed URL)
-# KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
+# # # Keep-alive URL (your own deployed URL)
+# # KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
 
-# def keep_alive():
-#     while True:
-#         try:
-#             response = requests.get(KEEP_ALIVE_URL, timeout=10)
-#             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
-#         except Exception as e:
-#             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
-#         time.sleep(240)  # Ping every 4 minutes (Render sleeps after ~15 min)
+# # def keep_alive():
+# #     while True:
+# #         try:
+# #             response = requests.get(KEEP_ALIVE_URL, timeout=10)
+# #             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
+# #         except Exception as e:
+# #             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
+# #         time.sleep(240)  # Ping every 4 minutes (Render sleeps after ~15 min)
 
-# # Health check endpoint
-# @app.get("/health")
-# async def health_check():
-#     return {"status": "healthy", "message": "Render keep-alive is working"}
+# # # Health check endpoint
+# # @app.get("/health")
+# # async def health_check():
+# #     return {"status": "healthy", "message": "Render keep-alive is working"}
 
-# # Start keep-alive in background thread
-# if __name__ != "__main__":
-#     # This runs when deployed on Render / Vercel / etc.
-#     threading.Thread(target=keep_alive, daemon=True).start()
-#     print("✅ Keep-alive thread started (pings every 4 minutes)")
+# # # Start keep-alive in background thread
+# # if __name__ != "__main__":
+# #     # This runs when deployed on Render / Vercel / etc.
+# #     threading.Thread(target=keep_alive, daemon=True).start()
+# #     print("✅ Keep-alive thread started (pings every 4 minutes)")
 
-# # ====================== WEBHOOK ======================
-# @app.post("/webhook")
-# async def webhook(request: Request):
-#     body_bytes = await request.body()
-#     body_str = body_bytes.decode("utf-8")
-#     try:
-#         body = json.loads(body_str)
-#     except json.JSONDecodeError:
-#         print("❌ Invalid JSON received")
-#         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
+# # # ====================== WEBHOOK ======================
+# # @app.post("/webhook")
+# # async def webhook(request: Request):
+# #     body_bytes = await request.body()
+# #     body_str = body_bytes.decode("utf-8")
+# #     try:
+# #         body = json.loads(body_str)
+# #     except json.JSONDecodeError:
+# #         print("❌ Invalid JSON received")
+# #         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
 
-#     signature = request.headers.get("x-retell-signature")
+# #     signature = request.headers.get("x-retell-signature")
 
-#     # Debug logging
-#     print(f"\n🔧 --- NEW TOOL CALL ---")
-#     print(f"Raw body: {body}")
+# #     # Debug logging
+# #     print(f"\n🔧 --- NEW TOOL CALL ---")
+# #     print(f"Raw body: {body}")
 
-#     # Handle both possible payload formats from Retell
-#     if isinstance(body, dict):
-#         function_name = body.get("name")
-#         args = body.get("args", {})
+# #     # Handle both possible payload formats from Retell
+# #     if isinstance(body, dict):
+# #         function_name = body.get("name")
+# #         args = body.get("args", {})
         
-#         # If "Payload: args only" is ON, sometimes body itself is the args
-#         if function_name is None and "full_name" in body or "action" in body:
-#             function_name = "unknown"  # fallback
-#             args = body
-#     else:
-#         function_name = None
-#         args = {}
+# #         # If "Payload: args only" is ON, sometimes body itself is the args
+# #         if function_name is None and "full_name" in body or "action" in body:
+# #             function_name = "unknown"  # fallback
+# #             args = body
+# #     else:
+# #         function_name = None
+# #         args = {}
 
-#     print(f"Tool Name: {function_name}")
-#     print(f"Args: {args}")
+# #     print(f"Tool Name: {function_name}")
+# #     print(f"Args: {args}")
 
-#     if not function_name:
-#         print("❌ No function name found in payload")
-#         return JSONResponse(status_code=200, content={"result": {"error": "No function name"}})
+# #     if not function_name:
+# #         print("❌ No function name found in payload")
+# #         return JSONResponse(status_code=200, content={"result": {"error": "No function name"}})
 
-#     result = {}
+# #     result = {}
 
-#     if function_name == "verify_patient":
-#         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
-#         result = {"verified": bool(patient), "patient_found": bool(patient)}
+# #     if function_name == "verify_patient":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         result = {"verified": bool(patient), "patient_found": bool(patient)}
 
-#     elif function_name == "get_patient_details":
-#         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
-#         if patient:
-#             result = {
-#                 "name": patient["name"],
-#                 "procedure": patient["procedure"],
-#                 "appointment": patient["appointment"],
-#                 "status": patient["status"],
-#                 "prep_link": patient["prep_link"]
-#             }
-#         else:
-#             result = {"error": "Patient not found"}
+# #     elif function_name == "get_patient_details":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         if patient:
+# #             result = {
+# #                 "name": patient["name"],
+# #                 "procedure": patient["procedure"],
+# #                 "appointment": patient["appointment"],
+# #                 "status": patient["status"],
+# #                 "prep_link": patient["prep_link"]
+# #             }
+# #         else:
+# #             result = {"error": "Patient not found"}
 
-#     elif function_name == "get_open_slots":
-#         open_slots = [s for s in DATA["schedule"] if s["status"] == "OPEN"]
-#         result = {"open_slots": [{"date": s["date"], "time": s["time"]} for s in open_slots]}
+# #     elif function_name == "get_open_slots":
+# #         open_slots = [s for s in DATA["schedule"] if s["status"] == "OPEN"]
+# #         result = {"open_slots": [{"date": s["date"], "time": s["time"]} for s in open_slots]}
 
-#     elif function_name == "book_or_reschedule_appointment":
-#         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
-#         if not patient:
-#             result = {"success": False, "error": "Patient not found"}
-#         else:
-#             new_date = args.get("new_date")
-#             new_time = args.get("new_time")
-#             action = args.get("action", "book").lower()
+# #     elif function_name == "book_or_reschedule_appointment":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         if not patient:
+# #             result = {"success": False, "error": "Patient not found"}
+# #         else:
+# #             new_date = args.get("new_date")
+# #             new_time = args.get("new_time")
+# #             action = args.get("action", "book").lower()
 
-#             success = False
-#             for slot in DATA["schedule"]:
-#                 if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
-#                     slot["status"] = "BOOKED"
-#                     slot["patient"] = patient["name"]
-#                     patient["appointment"] = {
-#                         "date": new_date,
-#                         "time": new_time,
-#                         "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
-#                     }
-#                     success = True
+# #             success = False
+# #             for slot in DATA["schedule"]:
+# #                 if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
+# #                     slot["status"] = "BOOKED"
+# #                     slot["patient"] = patient["name"]
+# #                     patient["appointment"] = {
+# #                         "date": new_date,
+# #                         "time": new_time,
+# #                         "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
+# #                     }
+# #                     success = True
 
-#                     if action == "reschedule":
-#                         for old_slot in DATA["schedule"]:
-#                             if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
-#                                 old_slot["status"] = "OPEN"
-#                                 old_slot["patient"] = None
-#                                 break
-#                     break
-#             result = {"success": success, "action": action}
+# #                     if action == "reschedule":
+# #                         for old_slot in DATA["schedule"]:
+# #                             if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
+# #                                 old_slot["status"] = "OPEN"
+# #                                 old_slot["patient"] = None
+# #                                 break
+# #                     break
+# #             result = {"success": success, "action": action}
 
-#     elif function_name == "send_followup":
-#             patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #     elif function_name == "send_followup":
+# #             patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
             
-#             if not patient:
-#                 result = {"success": False, "error": "Patient not found"}
-#                 print("❌ Patient not found for follow-up")
-#             else:
-#                 msg_type = args.get("message_type", "logistics")
-#                 templates = get_followup_templates(patient, msg_type)
+# #             if not patient:
+# #                 result = {"success": False, "error": "Patient not found"}
+# #                 print("❌ Patient not found for follow-up")
+# #             else:
+# #                 msg_type = args.get("message_type", "logistics")
+# #                 templates = get_followup_templates(patient, msg_type)
 
-#                 phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
-#                 email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
+# #                 phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
+# #                 email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
 
-#                 print(f"\n{'='*90}")
-#                 print(f"📱 SMS to {phone} | Type: {msg_type}")
-#                 print(f"📧 EMAIL to {email} | Type: {msg_type}")
+# #                 print(f"\n{'='*90}")
+# #                 print(f"📱 SMS to {phone} | Type: {msg_type}")
+# #                 print(f"📧 EMAIL to {email} | Type: {msg_type}")
 
-#                 sms_sent = False
-#                 email_sent = False
+# #                 sms_sent = False
+# #                 email_sent = False
 
-#                 # ====================== TWILIO SMS ======================
-#                 twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
-#                 twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
-#                 twilio_from = os.getenv("TWILIO_PHONE_FROM")
+# #                 # ====================== TWILIO SMS ======================
+# #                 twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+# #                 twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+# #                 twilio_from = os.getenv("TWILIO_PHONE_FROM")
 
-#                 if twilio_sid and twilio_token and twilio_from:
-#                     try:
-#                         from twilio.rest import Client
-#                         client = Client(twilio_sid, twilio_token)
-#                         message = client.messages.create(
-#                             body=templates['sms'],
-#                             from_=twilio_from,
-#                             to=phone
-#                         )
-#                         print(f"✅ SMS Sent! SID: {message.sid} | Status: {message.status}")
-#                         sms_sent = True
-#                     except Exception as e:
-#                         print(f"❌ Twilio Error: {type(e).__name__}: {e}")
+# #                 if twilio_sid and twilio_token and twilio_from:
+# #                     try:
+# #                         from twilio.rest import Client
+# #                         client = Client(twilio_sid, twilio_token)
+# #                         message = client.messages.create(
+# #                             body=templates['sms'],
+# #                             from_=twilio_from,
+# #                             to=phone
+# #                         )
+# #                         print(f"✅ SMS Sent! SID: {message.sid} | Status: {message.status}")
+# #                         sms_sent = True
+# #                     except Exception as e:
+# #                         print(f"❌ Twilio Error: {type(e).__name__}: {e}")
 
-#                 # ====================== SENDGRID EMAIL ======================
-#                 sendgrid_key = os.getenv("SENDGRID_API_KEY")
-#                 from_email = os.getenv("SENDGRID_FROM_EMAIL")
+# #                 # ====================== SENDGRID EMAIL ======================
+# #                 sendgrid_key = os.getenv("SENDGRID_API_KEY")
+# #                 from_email = os.getenv("SENDGRID_FROM_EMAIL")
 
-#                 if sendgrid_key and from_email:
-#                     try:
-#                         from sendgrid import SendGridAPIClient
-#                         from sendgrid.helpers.mail import Mail
+# #                 if sendgrid_key and from_email:
+# #                     try:
+# #                         from sendgrid import SendGridAPIClient
+# #                         from sendgrid.helpers.mail import Mail
 
-#                         sg = SendGridAPIClient(sendgrid_key)
+# #                         sg = SendGridAPIClient(sendgrid_key)
 
-#                         message = Mail(
-#                             from_email=from_email,
-#                             to_emails=email,
-#                             subject=templates['email_subject'],
-#                             html_content=templates['email_body'].replace("\n", "<br>")
-#                         )
+# #                         message = Mail(
+# #                             from_email=from_email,
+# #                             to_emails=email,
+# #                             subject=templates['email_subject'],
+# #                             html_content=templates['email_body'].replace("\n", "<br>")
+# #                         )
 
-#                         response = sg.send(message)
-#                         print(f"✅ Email Sent! Status Code: {response.status_code}")
-#                         email_sent = True
+# #                         response = sg.send(message)
+# #                         print(f"✅ Email Sent! Status Code: {response.status_code}")
+# #                         email_sent = True
 
-#                     except Exception as e:
-#                         print(f"❌ SendGrid Error: {type(e).__name__}: {e}")
-#                 else:
-#                     print("⚠️ SendGrid credentials missing")
+# #                     except Exception as e:
+# #                         print(f"❌ SendGrid Error: {type(e).__name__}: {e}")
+# #                 else:
+# #                     print("⚠️ SendGrid credentials missing")
 
-#                 print('='*90)
+# #                 print('='*90)
 
-#                 result = {
-#                     "success": True,
-#                     "message_type": msg_type,
-#                     "phone": phone,
-#                     "email": email,
-#                     "sms_sent": sms_sent,
-#                     "email_sent": email_sent
-#                 }
+# #                 result = {
+# #                     "success": True,
+# #                     "message_type": msg_type,
+# #                     "phone": phone,
+# #                     "email": email,
+# #                     "sms_sent": sms_sent,
+# #                     "email_sent": email_sent
+# #                 }
 
-#             return JSONResponse(status_code=200, content={"result": result})
-#     else:
-#         result = {"error": "Unknown function"}
+# #             return JSONResponse(status_code=200, content={"result": result})
+# #     else:
+# #         result = {"error": "Unknown function"}
 
-#     print(f"✅ Returning: {result}")
-#     return JSONResponse(status_code=200, content={"result": result})
+# #     print(f"✅ Returning: {result}")
+# #     return JSONResponse(status_code=200, content={"result": result})
 
-# # ====================== RESET FOR QA ======================
-# @app.post("/reset")
-# async def reset_state():
-#     global DATA
-#     from mock_data import MOCK_DATA
-#     DATA = copy.deepcopy(MOCK_DATA)
-#     return {"status": "reset", "message": "Mock data has been reset"}
+# # # ====================== RESET FOR QA ======================
+# # @app.post("/reset")
+# # async def reset_state():
+# #     global DATA
+# #     from mock_data import MOCK_DATA
+# #     DATA = copy.deepcopy(MOCK_DATA)
+# #     return {"status": "reset", "message": "Mock data has been reset"}
 
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
+# # if __name__ == "__main__":
+# #     import uvicorn
+# #     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+# # # app.py
+# # import os
+# # import json
+# # import copy
+# # import threading
+# # import time
+# # import requests
+# # from fastapi import FastAPI, Request
+# # from fastapi.responses import JSONResponse
+# # from dotenv import load_dotenv
+
+# # load_dotenv()
+
+# # app = FastAPI()
+
+# # # Retell SDK
+# # try:
+# #     from retell_sdk import Retell
+# #     retell_client = Retell(api_key=os.getenv("RETELL_API_KEY"))
+# #     RETELL_AVAILABLE = True
+# # except ImportError:
+# #     print("⚠️  retell_sdk not installed → signature verification skipped for local testing.")
+# #     RETELL_AVAILABLE = False
+# #     retell_client = None
+
+# # # Load mock data
+# # from mock_data import MOCK_DATA
+
+# # # Global state
+# # DATA = copy.deepcopy(MOCK_DATA)
+# # CURRENT_CALL_ID = None   # To detect new calls
+
+# # def reset_mock_data():
+# #     """Reset all mock data for a new call"""
+# #     global DATA, CURRENT_CALL_ID
+# #     DATA = copy.deepcopy(MOCK_DATA)
+# #     CURRENT_CALL_ID = None
+# #     print("🔄 [RESET] Mock data has been reset for a new call")
+
+# # # ====================== HELPER FUNCTIONS ======================
+# # def find_patient(full_name: str, dob: str):
+# #     full_name = full_name.strip().lower()
+# #     for p in DATA["patients"]:
+# #         if p["name"].lower() == full_name and p["dob"] == dob:
+# #             return p
+# #     return None
+
+# # def get_location_details(location_name: str):
+# #     for loc in DATA["locations"]:
+# #         if loc["name"] == location_name:
+# #             return loc
+# #     return {"address": "Victoria, BC", "google_maps": ""}
+
+# # # ====================== TEMPLATES ======================
+# # def get_followup_templates(patient: dict, msg_type: str):
+# #     location_name = patient["appointment"]["location"]
+# #     location = get_location_details(location_name)
+    
+# #     date = patient["appointment"]["date"]
+# #     time = patient["appointment"]["time"]
+# #     loc_name = location_name
+# #     address = location.get("address", "")
+# #     google_maps = location.get("google_maps", "")
+# #     prep_link = patient["prep_link"]
+
+# #     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
+
+# #     if msg_type == "booking":
+# #         sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"{driver_reminder}\n"
+# #                f"Prep instructions: {prep_link}")
+
+# #         email_subject = "Pacific Digestive Health Appointment Confirmation"
+# #         email_body = f"""Hello,
+
+# # Your procedure has been booked with Pacific Digestive Health.
+
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
+
+# # **Google Maps:** {google_maps}
+
+# # Please arrive 30 minutes early.
+
+# # {driver_reminder}
+
+# # **Preparation Instructions:**
+# # {prep_link}
+
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
+
+# #     elif msg_type == "reschedule":
+# #         sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"{driver_reminder}\n"
+# #                f"Prep instructions: {prep_link}")
+
+# #         email_subject = "Pacific Digestive Health Appointment Updated"
+# #         email_body = f"""Hello,
+
+# # Your appointment has been **updated**:
+
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
+
+# # **Google Maps:** {google_maps}
+
+# # Please arrive 30 minutes early.
+
+# # {driver_reminder}
+
+# # **Preparation Instructions:**
+# # {prep_link}
+
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
+
+# #     else:  # logistics
+# #         sms = (f"Pacific Digestive Health: Your appointment is on {date} at {time} at {loc_name}.\n"
+# #                f"Address: {address}\n"
+# #                f"Google Maps: {google_maps}\n"
+# #                f"Please arrive 30 minutes early.\n"
+# #                f"Prep: {prep_link}")
+
+# #         email_subject = "Pacific Digestive Health Appointment Details"
+# #         email_body = f"""Hello,
+
+# # Here are your appointment details:
+
+# # **Hospital:** {loc_name}
+# # **Address:** {address}
+# # **Date:** {date}
+# # **Time:** {time}
+
+# # **Google Maps:** {google_maps}
+
+# # Please arrive 30 minutes early.
+
+# # {driver_reminder if "sedation" in prep_link.lower() else ""}
+
+# # **Preparation Instructions:**
+# # {prep_link}
+
+# # Thank you,
+# # Pacific Digestive Health
+# # Dr. Smith’s Office"""
+
+# #     return {
+# #         "sms": sms,
+# #         "email_subject": email_subject,
+# #         "email_body": email_body
+# #     }
+
+
+# # # ====================== KEEP-ALIVE ======================
+# # KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
+
+# # def keep_alive():
+# #     while True:
+# #         try:
+# #             response = requests.get(KEEP_ALIVE_URL, timeout=10)
+# #             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
+# #         except Exception as e:
+# #             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
+# #         time.sleep(240)
+
+# # @app.get("/health")
+# # async def health_check():
+# #     return {"status": "healthy", "message": "Render keep-alive is working"}
+
+# # if __name__ != "__main__":
+# #     threading.Thread(target=keep_alive, daemon=True).start()
+# #     print("✅ Keep-alive thread started")
+
+
+# # # ====================== WEBHOOK ======================
+# # @app.post("/webhook")
+# # async def webhook(request: Request):
+# #     global CURRENT_CALL_ID
+
+# #     body_bytes = await request.body()
+# #     body_str = body_bytes.decode("utf-8")
+# #     try:
+# #         body = json.loads(body_str)
+# #     except json.JSONDecodeError:
+# #         print("❌ Invalid JSON received")
+# #         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
+
+# #     # ====================== AUTO RESET ON NEW CALL ======================
+# #     call_id = None
+# #     if isinstance(body, dict) and "call" in body:
+# #         call_data = body.get("call")
+# #         if isinstance(call_data, dict):
+# #             call_id = call_data.get("call_id")
+
+# #     if call_id and call_id != CURRENT_CALL_ID:
+# #         print(f"🔄 New call detected (Call ID: {call_id}). Resetting mock data...")
+# #         reset_mock_data()
+# #         CURRENT_CALL_ID = call_id
+
+# #     # Debug logging
+# #     print(f"\n🔧 --- NEW TOOL CALL ---")
+# #     print(f"Call ID: {call_id}")
+# #     print(f"Tool Name: {body.get('name')}")
+
+# #     # Handle payload
+# #     function_name = body.get("name")
+# #     args = body.get("args", {}) or {}
+
+# #     if not function_name:
+# #         print("❌ No function name found in payload")
+# #         return JSONResponse(status_code=200, content={"result": {"error": "No function name"}})
+
+# #     result = {}
+
+# #     if function_name == "verify_patient":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         result = {"verified": bool(patient), "patient_found": bool(patient)}
+
+# #     elif function_name == "get_patient_details":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         if patient:
+# #             result = {
+# #                 "name": patient["name"],
+# #                 "procedure": patient["procedure"],
+# #                 "appointment": patient["appointment"],
+# #                 "status": patient["status"],
+# #                 "prep_link": patient["prep_link"]
+# #             }
+# #         else:
+# #             result = {"error": "Patient not found"}
+
+# #     elif function_name == "get_open_slots":
+# #         open_slots = [s for s in DATA["schedule"] if s["status"] == "OPEN"]
+# #         result = {"open_slots": [{"date": s["date"], "time": s["time"]} for s in open_slots]}
+
+# #     elif function_name == "book_or_reschedule_appointment":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+# #         if not patient:
+# #             result = {"success": False, "error": "Patient not found"}
+# #         else:
+# #             new_date = args.get("new_date")
+# #             new_time = args.get("new_time")
+# #             action = args.get("action", "book").lower()
+
+# #             success = False
+# #             for slot in DATA["schedule"]:
+# #                 if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
+# #                     slot["status"] = "BOOKED"
+# #                     slot["patient"] = patient["name"]
+# #                     patient["appointment"] = {
+# #                         "date": new_date,
+# #                         "time": new_time,
+# #                         "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
+# #                     }
+# #                     success = True
+
+# #                     if action == "reschedule":
+# #                         for old_slot in DATA["schedule"]:
+# #                             if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
+# #                                 old_slot["status"] = "OPEN"
+# #                                 old_slot["patient"] = None
+# #                                 break
+# #                     break
+# #             result = {"success": success, "action": action}
+
+# #     elif function_name == "send_followup":
+# #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
+        
+# #         if not patient:
+# #             result = {"success": False, "error": "Patient not found"}
+# #             print("❌ Patient not found for follow-up")
+# #         else:
+# #             msg_type = args.get("message_type", "logistics")
+# #             templates = get_followup_templates(patient, msg_type)
+
+# #             phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
+# #             email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
+
+# #             print(f"\n{'='*90}")
+# #             print(f"📱 SMS to {phone} | Type: {msg_type}")
+# #             print(f"📧 EMAIL to {email} | Type: {msg_type}")
+
+# #             sms_sent = False
+# #             email_sent = False
+
+# #             # Twilio SMS
+# #             twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+# #             twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+# #             twilio_from = os.getenv("TWILIO_PHONE_FROM")
+
+# #             if twilio_sid and twilio_token and twilio_from:
+# #                 try:
+# #                     from twilio.rest import Client
+# #                     client = Client(twilio_sid, twilio_token)
+# #                     message = client.messages.create(
+# #                         body=templates['sms'],
+# #                         from_=twilio_from,
+# #                         to=phone
+# #                     )
+# #                     print(f"✅ SMS Sent! SID: {message.sid} | Status: {message.status}")
+# #                     sms_sent = True
+# #                 except Exception as e:
+# #                     print(f"❌ Twilio Error: {type(e).__name__}: {e}")
+
+# #             # SendGrid Email
+# #             sendgrid_key = os.getenv("SENDGRID_API_KEY")
+# #             from_email = os.getenv("SENDGRID_FROM_EMAIL")
+
+# #             if sendgrid_key and from_email:
+# #                 try:
+# #                     from sendgrid import SendGridAPIClient
+# #                     from sendgrid.helpers.mail import Mail
+
+# #                     sg = SendGridAPIClient(sendgrid_key)
+# #                     message = Mail(
+# #                         from_email=from_email,
+# #                         to_emails=email,
+# #                         subject=templates['email_subject'],
+# #                         html_content=templates['email_body'].replace("\n", "<br>")
+# #                     )
+# #                     response = sg.send(message)
+# #                     print(f"✅ Email Sent! Status Code: {response.status_code}")
+# #                     email_sent = True
+# #                 except Exception as e:
+# #                     print(f"❌ SendGrid Error: {type(e).__name__}: {e}")
+# #             else:
+# #                 print("⚠️ SendGrid credentials missing")
+
+# #             print('='*90)
+
+# #             result = {
+# #                 "success": True,
+# #                 "message_type": msg_type,
+# #                 "phone": phone,
+# #                 "email": email,
+# #                 "sms_sent": sms_sent,
+# #                 "email_sent": email_sent
+# #             }
+
+# #     else:
+# #         result = {"error": "Unknown function"}
+
+# #     print(f"✅ Returning: {result}")
+# #     return JSONResponse(status_code=200, content={"result": result})
+
+
+# # # ====================== MANUAL RESET FOR QA ======================
+# # @app.post("/reset")
+# # async def reset_state():
+# #     reset_mock_data()
+# #     return {"status": "reset", "message": "Mock data has been reset"}
+
+
+# # if __name__ == "__main__":
+# #     import uvicorn
+# #     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
 # # app.py
@@ -388,7 +759,7 @@
 #     retell_client = Retell(api_key=os.getenv("RETELL_API_KEY"))
 #     RETELL_AVAILABLE = True
 # except ImportError:
-#     print("⚠️  retell_sdk not installed → signature verification skipped for local testing.")
+#     print("⚠️  retell_sdk not installed → signature verification skipped.")
 #     RETELL_AVAILABLE = False
 #     retell_client = None
 
@@ -397,14 +768,13 @@
 
 # # Global state
 # DATA = copy.deepcopy(MOCK_DATA)
-# CURRENT_CALL_ID = None   # To detect new calls
+# CURRENT_CALL_ID = None
 
 # def reset_mock_data():
-#     """Reset all mock data for a new call"""
 #     global DATA, CURRENT_CALL_ID
 #     DATA = copy.deepcopy(MOCK_DATA)
 #     CURRENT_CALL_ID = None
-#     print("🔄 [RESET] Mock data has been reset for a new call")
+#     print("🔄 [RESET] Mock data fully reset to original state for new test")
 
 # # ====================== HELPER FUNCTIONS ======================
 # def find_patient(full_name: str, dob: str):
@@ -420,68 +790,42 @@
 #             return loc
 #     return {"address": "Victoria, BC", "google_maps": ""}
 
-# # ====================== TEMPLATES ======================
+# # ====================== FIXED TEMPLATES (with procedure + prep start) ======================
 # def get_followup_templates(patient: dict, msg_type: str):
 #     location_name = patient["appointment"]["location"]
 #     location = get_location_details(location_name)
     
+#     procedure = patient.get("procedure", "procedure")
 #     date = patient["appointment"]["date"]
 #     time = patient["appointment"]["time"]
 #     loc_name = location_name
 #     address = location.get("address", "")
 #     google_maps = location.get("google_maps", "")
-#     prep_link = patient["prep_link"]
+#     prep_link = patient.get("prep_link", "")
+#     prep_start_date = patient.get("prep_start_date", "April 20")
 
 #     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
 
+#     # SMS
 #     if msg_type == "booking":
-#         sms = (f"Pacific Digestive Health: Your procedure is booked for {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"{driver_reminder}\n"
-#                f"Prep instructions: {prep_link}")
-
-#         email_subject = "Pacific Digestive Health Appointment Confirmation"
-#         email_body = f"""Hello,
-
-# Your procedure has been booked with Pacific Digestive Health.
-
-# **Hospital:** {loc_name}
-# **Address:** {address}
-# **Date:** {date}
-# **Time:** {time}
-
-# **Google Maps:** {google_maps}
-
-# Please arrive 30 minutes early.
-
-# {driver_reminder}
-
-# **Preparation Instructions:**
-# {prep_link}
-
-# Thank you,
-# Pacific Digestive Health
-# Dr. Smith’s Office"""
-
+#         sms = f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
 #     elif msg_type == "reschedule":
-#         sms = (f"Pacific Digestive Health: Your procedure has been rescheduled to {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"{driver_reminder}\n"
-#                f"Prep instructions: {prep_link}")
+#         sms = f"Pacific Digestive Health: Your {procedure} has been rescheduled to {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
+#     else:  # logistics
+#         sms = f"Pacific Digestive Health: Your {procedure} is on {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\nPrep instructions: {prep_link}"
 
-#         email_subject = "Pacific Digestive Health Appointment Updated"
-#         email_body = f"""Hello,
+#     # Email
+#     email_subject = "Pacific Digestive Health Appointment Details"
+#     email_body = f"""Hello,
 
-# Your appointment has been **updated**:
+# Your {procedure} appointment with Pacific Digestive Health:
 
+# **Procedure:** {procedure}
 # **Hospital:** {loc_name}
 # **Address:** {address}
 # **Date:** {date}
 # **Time:** {time}
+# **Prep Starts:** {prep_start_date}
 
 # **Google Maps:** {google_maps}
 
@@ -494,37 +838,8 @@
 
 # Thank you,
 # Pacific Digestive Health
-# Dr. Smith’s Office"""
-
-#     else:  # logistics
-#         sms = (f"Pacific Digestive Health: Your appointment is on {date} at {time} at {loc_name}.\n"
-#                f"Address: {address}\n"
-#                f"Google Maps: {google_maps}\n"
-#                f"Please arrive 30 minutes early.\n"
-#                f"Prep: {prep_link}")
-
-#         email_subject = "Pacific Digestive Health Appointment Details"
-#         email_body = f"""Hello,
-
-# Here are your appointment details:
-
-# **Hospital:** {loc_name}
-# **Address:** {address}
-# **Date:** {date}
-# **Time:** {time}
-
-# **Google Maps:** {google_maps}
-
-# Please arrive 30 minutes early.
-
-# {driver_reminder if "sedation" in prep_link.lower() else ""}
-
-# **Preparation Instructions:**
-# {prep_link}
-
-# Thank you,
-# Pacific Digestive Health
-# Dr. Smith’s Office"""
+# Dr. Brendan’s Office
+# """
 
 #     return {
 #         "sms": sms,
@@ -540,18 +855,16 @@
 #     while True:
 #         try:
 #             response = requests.get(KEEP_ALIVE_URL, timeout=10)
-#             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive ping sent → Status: {response.status_code}")
 #         except Exception as e:
-#             print(f"[{time.strftime('%H:%M:%S')}] Keep-alive failed: {e}")
+#             print(f"Keep-alive failed: {e}")
 #         time.sleep(240)
 
 # @app.get("/health")
 # async def health_check():
-#     return {"status": "healthy", "message": "Render keep-alive is working"}
+#     return {"status": "healthy"}
 
 # if __name__ != "__main__":
 #     threading.Thread(target=keep_alive, daemon=True).start()
-#     print("✅ Keep-alive thread started")
 
 
 # # ====================== WEBHOOK ======================
@@ -564,10 +877,9 @@
 #     try:
 #         body = json.loads(body_str)
 #     except json.JSONDecodeError:
-#         print("❌ Invalid JSON received")
 #         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
 
-#     # ====================== AUTO RESET ON NEW CALL ======================
+#     # === STRONG RESET ON EVERY NEW CALL ===
 #     call_id = None
 #     if isinstance(body, dict) and "call" in body:
 #         call_data = body.get("call")
@@ -575,21 +887,14 @@
 #             call_id = call_data.get("call_id")
 
 #     if call_id and call_id != CURRENT_CALL_ID:
-#         print(f"🔄 New call detected (Call ID: {call_id}). Resetting mock data...")
+#         print(f"🔄 New call detected (ID: {call_id}). Resetting mock data to original state...")
 #         reset_mock_data()
 #         CURRENT_CALL_ID = call_id
 
-#     # Debug logging
-#     print(f"\n🔧 --- NEW TOOL CALL ---")
-#     print(f"Call ID: {call_id}")
-#     print(f"Tool Name: {body.get('name')}")
-
-#     # Handle payload
 #     function_name = body.get("name")
 #     args = body.get("args", {}) or {}
 
 #     if not function_name:
-#         print("❌ No function name found in payload")
 #         return JSONResponse(status_code=200, content={"result": {"error": "No function name"}})
 
 #     result = {}
@@ -604,9 +909,8 @@
 #             result = {
 #                 "name": patient["name"],
 #                 "procedure": patient["procedure"],
-#                 "appointment": patient["appointment"],
 #                 "status": patient["status"],
-#                 "prep_link": patient["prep_link"]
+#                 "prep_link": patient.get("prep_link")
 #             }
 #         else:
 #             result = {"error": "Patient not found"}
@@ -619,48 +923,44 @@
 #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
 #         if not patient:
 #             result = {"success": False, "error": "Patient not found"}
-#         else:
-#             new_date = args.get("new_date")
-#             new_time = args.get("new_time")
-#             action = args.get("action", "book").lower()
+#             return JSONResponse(status_code=200, content={"result": result})
 
-#             success = False
-#             for slot in DATA["schedule"]:
-#                 if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
-#                     slot["status"] = "BOOKED"
-#                     slot["patient"] = patient["name"]
-#                     patient["appointment"] = {
-#                         "date": new_date,
-#                         "time": new_time,
-#                         "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
-#                     }
-#                     success = True
+#         new_date = args.get("new_date")
+#         new_time = args.get("new_time")
+#         action = args.get("action", "book").lower()
 
-#                     if action == "reschedule":
-#                         for old_slot in DATA["schedule"]:
-#                             if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
-#                                 old_slot["status"] = "OPEN"
-#                                 old_slot["patient"] = None
-#                                 break
-#                     break
-#             result = {"success": success, "action": action}
+#         success = False
+#         for slot in DATA["schedule"]:
+#             if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
+#                 slot["status"] = "BOOKED"
+#                 slot["patient"] = patient["name"]
+#                 patient["appointment"] = {
+#                     "date": new_date,
+#                     "time": new_time,
+#                     "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
+#                 }
+#                 success = True
+
+#                 if action == "reschedule":
+#                     for old_slot in DATA["schedule"]:
+#                         if old_slot.get("patient") == patient["name"] and (old_slot["date"] != new_date or old_slot["time"] != new_time):
+#                             old_slot["status"] = "OPEN"
+#                             old_slot["patient"] = None
+#                             break
+#                 break
+
+#         result = {"success": success, "action": action}
 
 #     elif function_name == "send_followup":
 #         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
-        
 #         if not patient:
 #             result = {"success": False, "error": "Patient not found"}
-#             print("❌ Patient not found for follow-up")
 #         else:
 #             msg_type = args.get("message_type", "logistics")
 #             templates = get_followup_templates(patient, msg_type)
 
 #             phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
 #             email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
-
-#             print(f"\n{'='*90}")
-#             print(f"📱 SMS to {phone} | Type: {msg_type}")
-#             print(f"📧 EMAIL to {email} | Type: {msg_type}")
 
 #             sms_sent = False
 #             email_sent = False
@@ -669,52 +969,33 @@
 #             twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
 #             twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
 #             twilio_from = os.getenv("TWILIO_PHONE_FROM")
-
 #             if twilio_sid and twilio_token and twilio_from:
 #                 try:
 #                     from twilio.rest import Client
 #                     client = Client(twilio_sid, twilio_token)
-#                     message = client.messages.create(
-#                         body=templates['sms'],
-#                         from_=twilio_from,
-#                         to=phone
-#                     )
-#                     print(f"✅ SMS Sent! SID: {message.sid} | Status: {message.status}")
+#                     message = client.messages.create(body=templates['sms'], from_=twilio_from, to=phone)
 #                     sms_sent = True
 #                 except Exception as e:
-#                     print(f"❌ Twilio Error: {type(e).__name__}: {e}")
+#                     print(f"Twilio Error: {e}")
 
 #             # SendGrid Email
 #             sendgrid_key = os.getenv("SENDGRID_API_KEY")
 #             from_email = os.getenv("SENDGRID_FROM_EMAIL")
-
 #             if sendgrid_key and from_email:
 #                 try:
 #                     from sendgrid import SendGridAPIClient
 #                     from sendgrid.helpers.mail import Mail
-
 #                     sg = SendGridAPIClient(sendgrid_key)
-#                     message = Mail(
-#                         from_email=from_email,
-#                         to_emails=email,
-#                         subject=templates['email_subject'],
-#                         html_content=templates['email_body'].replace("\n", "<br>")
-#                     )
-#                     response = sg.send(message)
-#                     print(f"✅ Email Sent! Status Code: {response.status_code}")
+#                     msg = Mail(from_email=from_email, to_emails=email, subject=templates['email_subject'],
+#                                html_content=templates['email_body'].replace("\n", "<br>"))
+#                     sg.send(msg)
 #                     email_sent = True
 #                 except Exception as e:
-#                     print(f"❌ SendGrid Error: {type(e).__name__}: {e}")
-#             else:
-#                 print("⚠️ SendGrid credentials missing")
-
-#             print('='*90)
+#                     print(f"SendGrid Error: {e}")
 
 #             result = {
 #                 "success": True,
 #                 "message_type": msg_type,
-#                 "phone": phone,
-#                 "email": email,
 #                 "sms_sent": sms_sent,
 #                 "email_sent": email_sent
 #             }
@@ -722,11 +1003,9 @@
 #     else:
 #         result = {"error": "Unknown function"}
 
-#     print(f"✅ Returning: {result}")
 #     return JSONResponse(status_code=200, content={"result": result})
 
 
-# # ====================== MANUAL RESET FOR QA ======================
 # @app.post("/reset")
 # async def reset_state():
 #     reset_mock_data()
@@ -736,7 +1015,6 @@
 # if __name__ == "__main__":
 #     import uvicorn
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 
 # app.py
 import os
@@ -790,14 +1068,15 @@ def get_location_details(location_name: str):
             return loc
     return {"address": "Victoria, BC", "google_maps": ""}
 
-# ====================== FIXED TEMPLATES (with procedure + prep start) ======================
-def get_followup_templates(patient: dict, msg_type: str):
-    location_name = patient["appointment"]["location"]
+# ====================== FIXED TEMPLATES - Include Google Maps link in SMS ======================
+def get_followup_templates(patient: dict, msg_type: str, booked_location=None):
+    location_name = booked_location if booked_location else patient.get("appointment", {}).get("location", "Royal Jubilee Hospital")
+    
     location = get_location_details(location_name)
     
     procedure = patient.get("procedure", "procedure")
-    date = patient["appointment"]["date"]
-    time = patient["appointment"]["time"]
+    date = patient.get("appointment", {}).get("date", "")
+    time = patient.get("appointment", {}).get("time", "")
     loc_name = location_name
     address = location.get("address", "")
     google_maps = location.get("google_maps", "")
@@ -806,15 +1085,32 @@ def get_followup_templates(patient: dict, msg_type: str):
 
     driver_reminder = "If IV sedation is planned, you are legally impaired for 24 hours afterward and must have a responsible adult drive you home."
 
-    # SMS
     if msg_type == "booking":
-        sms = f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
-    elif msg_type == "reschedule":
-        sms = f"Pacific Digestive Health: Your {procedure} has been rescheduled to {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\n{driver_reminder}\nPrep instructions: {prep_link}"
-    else:  # logistics
-        sms = f"Pacific Digestive Health: Your {procedure} is on {date} at {time} at {loc_name}.\nAddress: {address}\nPrep starts: {prep_start_date}\nPlease arrive 30 minutes early.\nPrep instructions: {prep_link}"
+        sms = (f"Pacific Digestive Health: Your {procedure} is booked for {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Prep starts: {prep_start_date}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"{driver_reminder}\n"
+               f"Prep instructions: {prep_link}")
 
-    # Email
+    elif msg_type == "reschedule":
+        sms = (f"Pacific Digestive Health: Your {procedure} has been rescheduled to {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Prep starts: {prep_start_date}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"{driver_reminder}\n"
+               f"Prep instructions: {prep_link}")
+
+    else:  # logistics
+        sms = (f"Pacific Digestive Health: Your {procedure} is on {date} at {time} at {loc_name}.\n"
+               f"Address: {address}\n"
+               f"Google Maps: {google_maps}\n"
+               f"Prep starts: {prep_start_date}\n"
+               f"Please arrive 30 minutes early.\n"
+               f"Prep instructions: {prep_link}")
+
     email_subject = "Pacific Digestive Health Appointment Details"
     email_body = f"""Hello,
 
@@ -847,7 +1143,6 @@ Dr. Brendan’s Office
         "email_body": email_body
     }
 
-
 # ====================== KEEP-ALIVE ======================
 KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "https://pdh-retell-demo.onrender.com/health")
 
@@ -879,7 +1174,7 @@ async def webhook(request: Request):
     except json.JSONDecodeError:
         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
 
-    # === STRONG RESET ON EVERY NEW CALL ===
+    # Strong reset on every new call
     call_id = None
     if isinstance(body, dict) and "call" in body:
         call_data = body.get("call")
@@ -887,7 +1182,7 @@ async def webhook(request: Request):
             call_id = call_data.get("call_id")
 
     if call_id and call_id != CURRENT_CALL_ID:
-        print(f"🔄 New call detected (ID: {call_id}). Resetting mock data to original state...")
+        print(f"🔄 New call detected (ID: {call_id}). Resetting mock data...")
         reset_mock_data()
         CURRENT_CALL_ID = call_id
 
@@ -909,7 +1204,7 @@ async def webhook(request: Request):
             result = {
                 "name": patient["name"],
                 "procedure": patient["procedure"],
-                "status": patient["status"],
+                "status": patient.get("status", "Referral on file"),
                 "prep_link": patient.get("prep_link")
             }
         else:
@@ -930,6 +1225,10 @@ async def webhook(request: Request):
         action = args.get("action", "book").lower()
 
         success = False
+        # new_location = "Royal Jubilee Hospital"
+        new_location = patient["appointment"].get("location", "Royal Jubilee Hospital")  # ✅ dynamic
+  # Default for new bookings (Margaret / Harry)
+
         for slot in DATA["schedule"]:
             if slot["date"] == new_date and slot["time"] == new_time and slot["status"] == "OPEN":
                 slot["status"] = "BOOKED"
@@ -937,7 +1236,7 @@ async def webhook(request: Request):
                 patient["appointment"] = {
                     "date": new_date,
                     "time": new_time,
-                    "location": patient["appointment"].get("location", "Royal Jubilee Hospital")
+                    "location": new_location
                 }
                 success = True
 
@@ -949,7 +1248,7 @@ async def webhook(request: Request):
                             break
                 break
 
-        result = {"success": success, "action": action}
+        result = {"success": success, "action": action, "location": new_location}
 
     elif function_name == "send_followup":
         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
@@ -957,7 +1256,11 @@ async def webhook(request: Request):
             result = {"success": False, "error": "Patient not found"}
         else:
             msg_type = args.get("message_type", "logistics")
-            templates = get_followup_templates(patient, msg_type)
+            # Pass the correct booked location from the booking result
+            booked_location = args.get("location")
+            templates = get_followup_templates(patient, msg_type)  # ✅ uses patient data directly
+
+            #  = get_followup_templates(patient, msg_type, booked_location)
 
             phone = patient.get("phone") or os.getenv("TEST_PHONE", "+15551234567")
             email = patient.get("email") or os.getenv("TEST_EMAIL", "test@example.com")
@@ -965,7 +1268,6 @@ async def webhook(request: Request):
             sms_sent = False
             email_sent = False
 
-            # Twilio SMS
             twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
             twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
             twilio_from = os.getenv("TWILIO_PHONE_FROM")
@@ -978,7 +1280,6 @@ async def webhook(request: Request):
                 except Exception as e:
                     print(f"Twilio Error: {e}")
 
-            # SendGrid Email
             sendgrid_key = os.getenv("SENDGRID_API_KEY")
             from_email = os.getenv("SENDGRID_FROM_EMAIL")
             if sendgrid_key and from_email:

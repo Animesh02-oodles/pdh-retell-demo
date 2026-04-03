@@ -11,10 +11,10 @@ MOCK_DATA = {
 },
 "status": "Referral on file",
 "prep_link": "https://ampleai.co/prep/colonoscopy",
-# "phone": "+61435441731",
-# "email": "wolfburghwellness@gmail.com"
-"phone": "+919451958058",  
-"email": "animesh.pandey@oodles.io"
+"phone": "+61435441731",
+"email": "wolfburghwellness@gmail.com"
+# "phone": "+919451958058",  
+# "email": "animesh.pandey@oodles.io"
 },
         {
             "name": "Harry Potter",
