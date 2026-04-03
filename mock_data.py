@@ -49,21 +49,22 @@ MOCK_DATA = {
             # "email": "animesh.pandey@oodles.io"
         },
         {
-            "name": "Dorothy Fawcett",
-            "dob": "1951-01-03",
-            "procedure": "Gastroscopy",
-            "appointment": {
-                "date": "Apr 29",
-                "time": "8:00 AM",
-                "location": "Saanich Peninsula Hospital"
-            },
-            "status": "Booked",
-            "prep_link": "https://ampleai.co/prep/gastroscopy",
-            "phone": "+61435441731",
-            "email": "wolfburghwellness@gmail.com"
-            # "phone": "+919451958058",  
-            # "email": "animesh.pandey@oodles.io"
-        }
+    "name": "Dorothy Fawcett",
+    "dob": "1951-01-03",
+    "procedure": "Gastroscopy",
+    "appointment": {
+        "date": "Apr 29",
+        "time": "8:00 AM",
+        "location": "Saanich Peninsula Hospital"
+    },
+    "status": "Booked",
+    "prep_link": "https://ampleai.co/prep/gastroscopy",
+    # "phone": "+919451958058",  
+    # "email": "animesh.pandey@oodles.io",
+    "phone": "+61435441731",
+    "email": "wolfburghwellness@gmail.com",
+    "prep_instructions": "Please don't eat or drink anything for 6 hours before your procedure. You may take essential medications with a small sip of water. Wear comfortable loose clothing. Remove dentures if you have them. Arrange for a responsible adult to drive you home afterward because of the sedation."
+}
     ],
     "schedule": [
         {

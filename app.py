@@ -1201,14 +1201,25 @@ async def webhook(request: Request):
     elif function_name == "get_patient_details":
         patient = find_patient(args.get("full_name", ""), args.get("date_of_birth", ""))
         if patient:
+            location_name = patient.get("appointment", {}).get("location", "")
+            location = get_location_details(location_name)
+            
             result = {
                 "name": patient["name"],
                 "procedure": patient["procedure"],
-                "status": patient.get("status", "Referral on file"),
-                "prep_link": patient.get("prep_link")
+                "status": patient.get("status", ""),
+                "prep_link": patient.get("prep_link", ""),
+                "appointment": {
+                    "date": patient["appointment"].get("date", ""),
+                    "time": patient["appointment"].get("time", ""),
+                    "location": location_name,
+                    "address": location.get("address", ""),
+                },
+                "prep_instructions": patient.get("prep_instructions", "Please follow the instructions in the link sent to you.")
             }
         else:
             result = {"error": "Patient not found"}
+        return JSONResponse(status_code=200, content={"result": result})
 
     elif function_name == "get_open_slots":
         open_slots = [s for s in DATA["schedule"] if s["status"] == "OPEN"]
