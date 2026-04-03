@@ -909,7 +909,6 @@ async def webhook(request: Request):
             result = {
                 "name": patient["name"],
                 "procedure": patient["procedure"],
-                "appointment": patient["appointment"],
                 "status": patient["status"],
                 "prep_link": patient.get("prep_link")
             }
