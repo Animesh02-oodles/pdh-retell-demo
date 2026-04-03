@@ -11,10 +11,12 @@ MOCK_DATA = {
 },
 "status": "Referral on file",
 "prep_link": "https://ampleai.co/prep/colonoscopy",
-"phone": "+61435441731",
-"email": "wolfburghwellness@gmail.com"
+# "phone": "+61435441731",
+# "email": "wolfburghwellness@gmail.com"
 # "phone": "+919451958058",  
 # "email": "animesh.pandey@oodles.io"
+"phone": "+17055004302",
+"email": "tech@ampleai.co "
 },
         {
             "name": "Harry Potter",
@@ -29,8 +31,10 @@ MOCK_DATA = {
             "prep_link": "https://ampleai.co/prep/colonoscopy",
             # "phone": "+919451958058",  
             # "email": "animesh.pandey@oodles.io"
-            "phone": "+61435441731",
-            "email": "wolfburghwellness@gmail.com"
+            # "phone": "+61435441731",
+            # "email": "wolfburghwellness@gmail.com"
+            "phone": "+17055004302",
+            "email": "tech@ampleai.co "
         },
         {
             "name": "Robert Takahashi",
@@ -43,10 +47,12 @@ MOCK_DATA = {
             },
             "status": "Booked - needs reschedule",
             "prep_link": "https://ampleai.co/prep/colonoscopy",
-            "phone": "+61435441731",
-            "email": "wolfburghwellness@gmail.com"
+            # "phone": "+61435441731",
+            # "email": "wolfburghwellness@gmail.com"
             # "phone": "+919451958058",  
             # "email": "animesh.pandey@oodles.io"
+            "phone": "+17055004302",
+            "email": "tech@ampleai.co "
         },
         {
     "name": "Dorothy Fawcett",
@@ -59,10 +65,12 @@ MOCK_DATA = {
     },
     "status": "Booked",
     "prep_link": "https://ampleai.co/prep/gastroscopy",
+    "phone": "+17055004302",
+    "email": "tech@ampleai.co ",
     # "phone": "+919451958058",  
     # "email": "animesh.pandey@oodles.io",
-    "phone": "+61435441731",
-    "email": "wolfburghwellness@gmail.com",
+    # "phone": "+61435441731",
+    # "email": "wolfburghwellness@gmail.com",
     "prep_instructions": "Please don't eat or drink anything for 6 hours before your procedure. You may take essential medications with a small sip of water. Wear comfortable loose clothing. Remove dentures if you have them. Arrange for a responsible adult to drive you home afterward because of the sedation."
 }
     ],
